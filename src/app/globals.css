@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom animations for the office */
+@keyframes typing {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes thinking {
+  0% { transform: translateY(0px); opacity: 0.5; }
+  50% { transform: translateY(-5px); opacity: 1; }
+  100% { transform: translateY(0px); opacity: 0.5; }
+}
+
+@keyframes screen-flicker {
+  0%, 100% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0.8; }
+}
+
+@keyframes desk-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+}
+
+.animate-typing {
+  animation: typing 1s ease-in-out infinite;
+}
+
+.animate-thinking {
+  animation: thinking 2s ease-in-out infinite;
+}
+
+.animate-screen-flicker {
+  animation: screen-flicker 10s infinite;
+}
+
+.animate-desk-glow {
+  animation: desk-glow 3s ease-in-out infinite;
+}
+
+/* Line clamp utilities for better text truncation */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
