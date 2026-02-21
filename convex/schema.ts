@@ -9,7 +9,19 @@ export default defineSchema({
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     assignee: v.union(v.literal("zak"), v.literal("ai")),
     order: v.number(),
-  }).index("by_status", ["status"]),
+    prompt: v.optional(v.string()),
+    aiStatus: v.optional(
+      v.union(
+        v.literal("idle"),
+        v.literal("pending"),
+        v.literal("running"),
+        v.literal("completed"),
+        v.literal("failed")
+      )
+    ),
+    aiResult: v.optional(v.string()),
+  }).index("by_status", ["status"])
+    .index("by_aiStatus", ["aiStatus"]),
 
   events: defineTable({
     title: v.string(),

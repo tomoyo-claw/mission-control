@@ -10,6 +10,7 @@
 
 import type * as content from "../content.js";
 import type * as events from "../events.js";
+import type * as http from "../http.js";
 import type * as notes from "../notes.js";
 import type * as seed from "../seed.js";
 import type * as tasks from "../tasks.js";
@@ -23,6 +24,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   content: typeof content;
   events: typeof events;
+  http: typeof http;
   notes: typeof notes;
   seed: typeof seed;
   tasks: typeof tasks;

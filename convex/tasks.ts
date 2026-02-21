@@ -8,6 +8,16 @@ export const list = query({
   },
 });
 
+export const pendingAI = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_aiStatus", (q) => q.eq("aiStatus", "pending"))
+      .collect();
+  },
+});
+
 export const create = mutation({
   args: {
     title: v.string(),
@@ -16,9 +26,13 @@ export const create = mutation({
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     assignee: v.union(v.literal("zak"), v.literal("ai")),
     order: v.number(),
+    prompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("tasks", args);
+    return await ctx.db.insert("tasks", {
+      ...args,
+      aiStatus: "idle",
+    });
   },
 });
 
@@ -31,6 +45,17 @@ export const update = mutation({
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
     assignee: v.optional(v.union(v.literal("zak"), v.literal("ai"))),
     order: v.optional(v.number()),
+    prompt: v.optional(v.string()),
+    aiStatus: v.optional(
+      v.union(
+        v.literal("idle"),
+        v.literal("pending"),
+        v.literal("running"),
+        v.literal("completed"),
+        v.literal("failed")
+      )
+    ),
+    aiResult: v.optional(v.string()),
   },
   handler: async (ctx, { id, ...updates }) => {
     const filtered = Object.fromEntries(

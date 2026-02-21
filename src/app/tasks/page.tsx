@@ -18,6 +18,9 @@ import {
   CheckCircle2,
   Circle,
   Loader2,
+  Play,
+  Zap,
+  AlertCircle,
 } from "lucide-react";
 import { useMockData, Task } from "@/lib/mock-data";
 
@@ -65,14 +68,47 @@ export default function TasksPage() {
   const [quickAdd, setQuickAdd] = useState<string | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const [quickAssignee, setQuickAssignee] = useState<"zak" | "ai">("ai");
+  const [promptModal, setPromptModal] = useState<{ taskId: string; title: string } | null>(null);
+  const [promptText, setPromptText] = useState("");
 
   const handleDragEnd = (result: DropResult) => {
     const { destination, draggableId } = result;
     if (!destination) return;
+    const newStatus = destination.droppableId as Task["status"];
+    const task = tasks.find((t) => t._id === draggableId);
+
+    // AI担当タスクがIn Progressに移動 → prompt入力を促す
+    if (task && task.assignee === "ai" && newStatus === "inprogress" && task.status !== "inprogress") {
+      if (task.prompt) {
+        // promptが既にある → そのまま実行開始
+        updateTask(draggableId, {
+          status: newStatus,
+          order: destination.index,
+          aiStatus: "pending",
+        });
+      } else {
+        // prompt未設定 → モーダルで入力
+        updateTask(draggableId, { status: newStatus, order: destination.index });
+        setPromptModal({ taskId: draggableId, title: task.title });
+        setPromptText("");
+      }
+      return;
+    }
+
     updateTask(draggableId, {
-      status: destination.droppableId as Task["status"],
+      status: newStatus,
       order: destination.index,
     });
+  };
+
+  const handlePromptSubmit = () => {
+    if (!promptModal || !promptText.trim()) return;
+    updateTask(promptModal.taskId, {
+      prompt: promptText,
+      aiStatus: "pending",
+    });
+    setPromptModal(null);
+    setPromptText("");
   };
 
   const handleQuickAdd = (status: Task["status"]) => {
@@ -263,6 +299,50 @@ export default function TasksPage() {
         </div>
       </DragDropContext>
 
+      {/* Prompt Modal */}
+      {promptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-gray-800">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-violet-400" />
+                <h2 className="text-lg font-bold">AIに実行指示</h2>
+              </div>
+              <p className="text-sm text-gray-400 mt-1">{promptModal.title}</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <textarea
+                autoFocus
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handlePromptSubmit();
+                  if (e.key === "Escape") setPromptModal(null);
+                }}
+                rows={4}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none focus:border-violet-500"
+                placeholder="このタスクで何をすべきか指示を入力...&#10;例: Mission ControlのREADMEを書いて"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setPromptModal(null)}
+                  className="px-4 py-2 text-sm text-gray-400 hover:text-white"
+                >
+                  スキップ
+                </button>
+                <button
+                  onClick={handlePromptSubmit}
+                  className="px-5 py-2 bg-violet-600 hover:bg-violet-700 rounded-lg text-sm text-white font-medium flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  実行開始
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {editingTask && (
         <TaskModal
@@ -326,9 +406,14 @@ function TaskCard({ task }: { task: Task }) {
         </p>
       )}
 
-      {/* Footer: assignee + date */}
+      {/* Footer: assignee + AI status + date */}
       <div className="flex items-center justify-between pl-3.5">
-        <AssigneeBadge assignee={task.assignee} />
+        <div className="flex items-center gap-1.5">
+          <AssigneeBadge assignee={task.assignee} />
+          {task.assignee === "ai" && task.aiStatus && task.aiStatus !== "idle" && (
+            <AIStatusBadge status={task.aiStatus} />
+          )}
+        </div>
         <span className="text-[10px] text-gray-600">
           {new Date(task.updatedAt).toLocaleDateString("ja-JP", {
             month: "short",
@@ -354,6 +439,23 @@ function AssigneeBadge({ assignee }: { assignee: "zak" | "ai" }) {
     <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-400">
       <Bot className="w-3 h-3" />
       智代
+    </span>
+  );
+}
+
+/* ── AI Status Badge ──────────────────────────────── */
+function AIStatusBadge({ status }: { status: string }) {
+  const config: Record<string, { icon: React.ReactNode; label: string; cls: string }> = {
+    pending: { icon: <Circle className="w-3 h-3" />, label: "待機", cls: "bg-amber-500/15 text-amber-400" },
+    running: { icon: <Loader2 className="w-3 h-3 animate-spin" />, label: "実行中", cls: "bg-blue-500/15 text-blue-400" },
+    completed: { icon: <CheckCircle2 className="w-3 h-3" />, label: "完了", cls: "bg-green-500/15 text-green-400" },
+    failed: { icon: <AlertCircle className="w-3 h-3" />, label: "失敗", cls: "bg-red-500/15 text-red-400" },
+  };
+  const c = config[status];
+  if (!c) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full ${c.cls}`}>
+      {c.icon} {c.label}
     </span>
   );
 }
@@ -408,6 +510,7 @@ function TaskModal({
   const [priority, setPriority] = useState(task.priority);
   const [assignee, setAssignee] = useState(task.assignee);
   const [status, setStatus] = useState(task.status);
+  const [prompt, setPrompt] = useState(task.prompt || "");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const save = () => {
@@ -417,8 +520,17 @@ function TaskModal({
       priority,
       assignee,
       status,
+      prompt: prompt || undefined,
     });
     onClose();
+  };
+
+  const triggerAI = () => {
+    onSave({
+      prompt: prompt || undefined,
+      aiStatus: "pending",
+      status: "inprogress",
+    });
   };
 
   return (
@@ -535,6 +647,40 @@ function TaskModal({
               </select>
             </div>
           </div>
+
+          {/* AI Prompt (AI担当のみ) */}
+          {assignee === "ai" && (
+            <div>
+              <label className="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
+                <Zap className="w-3 h-3 text-violet-400" />
+                AI実行指示
+              </label>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={3}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none focus:border-violet-500"
+                placeholder="AIへの指示を入力...&#10;例: READMEを書いて、テストを追加して"
+              />
+              {task.aiStatus && task.aiStatus !== "idle" && (
+                <div className="mt-2 flex items-center gap-2">
+                  <AIStatusBadge status={task.aiStatus} />
+                  {task.aiResult && (
+                    <span className="text-xs text-gray-400 truncate">{task.aiResult}</span>
+                  )}
+                </div>
+              )}
+              {(!task.aiStatus || task.aiStatus === "idle" || task.aiStatus === "failed") && prompt.trim() && (
+                <button
+                  onClick={triggerAI}
+                  className="mt-2 px-4 py-1.5 bg-violet-600 hover:bg-violet-700 rounded-lg text-xs text-white font-medium flex items-center gap-1.5"
+                >
+                  <Play className="w-3 h-3" />
+                  AIで実行
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Meta */}
           <div className="text-xs text-gray-500 flex gap-4 pt-1">

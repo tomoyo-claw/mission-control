@@ -16,6 +16,9 @@ export interface Task {
   priority: "high" | "medium" | "low";
   assignee: "zak" | "ai";
   order: number;
+  prompt?: string;
+  aiStatus?: "idle" | "pending" | "running" | "completed" | "failed";
+  aiResult?: string;
   // Compat fields
   createdAt: number;
   updatedAt: number;
@@ -206,6 +209,9 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     if (updates.priority !== undefined) args.priority = updates.priority;
     if (updates.assignee !== undefined) args.assignee = updates.assignee;
     if (updates.order !== undefined) args.order = updates.order;
+    if (updates.prompt !== undefined) args.prompt = updates.prompt;
+    if (updates.aiStatus !== undefined) args.aiStatus = updates.aiStatus;
+    if (updates.aiResult !== undefined) args.aiResult = updates.aiResult;
     updateTaskMut(args);
   };
 
