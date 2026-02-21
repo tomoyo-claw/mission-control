@@ -241,13 +241,14 @@ export default function TasksPage() {
                               {...prov.draggableProps}
                               {...prov.dragHandleProps}
                               onClick={() => setEditingTask(task)}
-                              className={`bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-gray-500 cursor-pointer transition-all ${
+                              className={`group relative bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-gray-500 cursor-pointer transition-all ${
                                 snap.isDragging
                                   ? "rotate-1 shadow-xl shadow-black/40"
                                   : ""
                               }`}
                             >
                               <TaskCard task={task} />
+                              <TaskDeleteButton taskId={task._id} onDelete={deleteTask} />
                             </div>
                           )}
                         </Draggable>
@@ -354,6 +355,39 @@ function AssigneeBadge({ assignee }: { assignee: "zak" | "ai" }) {
       <Bot className="w-3 h-3" />
       智代
     </span>
+  );
+}
+
+/* ── Task Delete Button (card hover) ──────────────── */
+function TaskDeleteButton({
+  taskId,
+  onDelete,
+}: {
+  taskId: string;
+  onDelete: (id: string) => void;
+}) {
+  const [confirm, setConfirm] = useState(false);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        if (confirm) {
+          onDelete(taskId);
+        } else {
+          setConfirm(true);
+          setTimeout(() => setConfirm(false), 2000);
+        }
+      }}
+      className={`absolute top-2 right-2 p-1.5 rounded-md transition-all ${
+        confirm
+          ? "bg-red-600 text-white opacity-100"
+          : "text-gray-500 hover:text-red-400 hover:bg-gray-700 opacity-0 group-hover:opacity-100"
+      }`}
+      title={confirm ? "もう一度クリックで削除" : "削除"}
+    >
+      <Trash2 className="w-3.5 h-3.5" />
+    </button>
   );
 }
 
