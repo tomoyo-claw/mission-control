@@ -7,10 +7,10 @@ export interface Task {
   _id: string;
   title: string;
   description?: string;
-  status: 'backlog' | 'inprogress' | 'review' | 'done';
+  status: 'todo' | 'inprogress' | 'done';
   priority: 'high' | 'medium' | 'low';
+  assignee: 'zak' | 'ai';
   assigneeId?: string;
-  assignee?: User | null;
   order: number;
   createdAt: number;
   updatedAt: number;
@@ -131,46 +131,57 @@ const mockUsers: User[] = [
 const mockTasks: Task[] = [
   {
     _id: '1',
-    title: 'Implement user authentication',
-    description: 'Add secure login and registration system',
-    status: 'inprogress',
+    title: 'Chrome拡張リレーのセットアップ',
+    description: 'PCのChromeにOpenClaw Browser Relay拡張をインストール',
+    status: 'todo',
     priority: 'high',
-    assigneeId: '1',
-    order: 1,
+    assignee: 'zak',
+    order: 0,
     createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 60 * 60 * 1000,
   },
   {
     _id: '2',
-    title: 'Design new homepage',
-    description: 'Create modern, responsive homepage design',
-    status: 'review',
-    priority: 'medium',
-    assigneeId: '4',
-    order: 1,
-    createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
-    updatedAt: Date.now() - 30 * 60 * 1000,
+    title: 'コンテンツパイプライン改善',
+    description: '6カラムKanbanボードの実装',
+    status: 'done',
+    priority: 'high',
+    assignee: 'ai',
+    order: 0,
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now(),
   },
   {
     _id: '3',
-    title: 'Optimize database queries',
-    description: 'Improve performance of frequently used queries',
-    status: 'backlog',
-    priority: 'low',
-    assigneeId: '3',
+    title: 'X (@eternum_zak) ログイン',
+    description: 'ブラウザリレー経由でXにログインしてリサーチ開始',
+    status: 'todo',
+    priority: 'medium',
+    assignee: 'ai',
     order: 1,
     createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
   },
   {
     _id: '4',
-    title: 'Write API documentation',
-    description: 'Complete documentation for all API endpoints',
+    title: 'Mission Control UIデザイン改善',
+    description: 'レスポンシブ対応とアニメーション追加',
+    status: 'todo',
+    priority: 'low',
+    assignee: 'ai',
+    order: 2,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  },
+  {
+    _id: '5',
+    title: 'ワークスペース初期設定',
+    description: 'SOUL.md, IDENTITY.md, TOOLS.md等の整備',
     status: 'done',
-    priority: 'medium',
-    assigneeId: '2',
+    priority: 'high',
+    assignee: 'ai',
     order: 1,
-    createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
+    createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
   },
 ];
@@ -379,14 +390,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [agentPositions, setAgentPositions] = useState<AgentPosition[]>([]);
 
-  // Initialize tasks with assignee data
+  // Initialize tasks
   useEffect(() => {
-    const tasksWithAssignees = mockTasks.map(task => ({
-      ...task,
-      assignee: task.assigneeId ? users.find(u => u._id === task.assigneeId) || null : null,
-    }));
-    setTasks(tasksWithAssignees);
-  }, [users]);
+    setTasks(mockTasks);
+  }, []);
 
   // Initialize content with assignee data
   useEffect(() => {
@@ -409,12 +416,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const updateTask = (id: string, updates: Partial<Task>) => {
     setTasks(prev => prev.map(task => 
       task._id === id 
-        ? { 
-            ...task, 
-            ...updates, 
-            updatedAt: Date.now(),
-            assignee: updates.assigneeId ? users.find(u => u._id === updates.assigneeId) || null : task.assignee 
-          } 
+        ? { ...task, ...updates, updatedAt: Date.now() } 
         : task
     ));
   };
@@ -426,7 +428,6 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       _id: `task_${now}`,
       createdAt: now,
       updatedAt: now,
-      assignee: taskData.assigneeId ? users.find(u => u._id === taskData.assigneeId) || null : null,
     };
     setTasks(prev => [...prev, newTask]);
   };
