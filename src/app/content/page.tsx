@@ -392,13 +392,9 @@ function ContentCard({ item }: { item: ContentItem }) {
         <span className={`px-1.5 py-0.5 rounded ${cfg.color} bg-opacity-20`} style={{ backgroundColor: cfg.color.replace("text-", "") + "15" }}>
           {cfg.label}
         </span>
-        {item.dueDate && (
-          <span
-            className={
-              item.dueDate < Date.now() ? "text-red-400" : "text-gray-500"
-            }
-          >
-            {new Date(item.dueDate).toLocaleDateString("ja-JP", {
+        {item.createdAt && (
+          <span className="text-gray-500">
+            {new Date(item.createdAt).toLocaleDateString("ja-JP", {
               month: "short",
               day: "numeric",
             })}

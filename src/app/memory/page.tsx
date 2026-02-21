@@ -563,7 +563,7 @@ function NewNoteForm({
   onCreate,
 }: {
   onCancel: () => void;
-  onCreate: (data: Omit<Note, "_id" | "createdAt" | "updatedAt">) => void;
+  onCreate: (data: { title: string; content: string; tags: string[]; createdBy?: string }) => void;
 }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
