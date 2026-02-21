@@ -55,11 +55,14 @@ export interface ContentItem {
   _id: string;
   title: string;
   type: 'blog' | 'tweet' | 'video' | 'article' | 'podcast';
-  stage: 'idea' | 'draft' | 'review' | 'published';
+  stage: 'ideas' | 'script' | 'thumbnail' | 'filming' | 'editing' | 'published';
   description?: string;
+  script?: string;
+  thumbnailUrl?: string;
   assigneeId?: string;
   assignee?: User | null;
   dueDate?: number;
+  tags?: string[];
   order: number;
   createdAt: number;
   updatedAt: number;
@@ -223,38 +226,82 @@ const mockNotes: Note[] = [
 const mockContent: ContentItem[] = [
   {
     _id: '1',
-    title: 'Introduction to AI Workflows',
-    type: 'blog',
-    stage: 'draft',
-    description: 'Comprehensive guide to implementing AI in daily workflows',
+    title: 'AIエージェントの始め方ガイド',
+    type: 'video',
+    stage: 'script',
+    description: 'AIエージェントを使ったワークフロー自動化の入門動画',
+    script: '# AIエージェント入門\n\n## イントロ (0:00-0:30)\nこんにちは、今日はAIエージェントの基本を解説します。\n\n## 本編 (0:30-5:00)\n- エージェントとは何か\n- 実際の使い方デモ\n- メリットと注意点\n\n## まとめ (5:00-5:30)\n次回はカスタマイズ方法を紹介します。',
     assigneeId: '2',
     dueDate: Date.now() + 7 * 24 * 60 * 60 * 1000,
-    order: 1,
+    tags: ['AI', 'tutorial', 'beginner'],
+    order: 0,
     createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 60 * 60 * 1000,
   },
   {
     _id: '2',
-    title: 'New feature announcement',
-    type: 'tweet',
-    stage: 'idea',
-    description: 'Announce the new mission control dashboard',
+    title: 'DeFi × AI の未来',
+    type: 'article',
+    stage: 'ideas',
+    description: 'DeFiプロトコルにAIがどう組み込まれるかの考察記事',
     assigneeId: '2',
-    order: 2,
+    tags: ['DeFi', 'AI', 'crypto'],
+    order: 0,
     createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
   },
   {
     _id: '3',
-    title: 'Product Demo Video',
+    title: 'Mission Control デモ動画',
     type: 'video',
-    stage: 'review',
-    description: 'Video walkthrough of key features',
+    stage: 'editing',
+    description: 'ダッシュボード機能のウォークスルー動画',
+    script: '# Mission Control Demo\n\nダッシュボードの各機能を実演。タスクボード、カレンダー、オフィス画面を中心に紹介。',
+    thumbnailUrl: 'https://placehold.co/640x360/1a1a2e/e0e0e0?text=Mission+Control',
     assigneeId: '4',
     dueDate: Date.now() + 3 * 24 * 60 * 60 * 1000,
-    order: 1,
+    tags: ['demo', 'product'],
+    order: 0,
     createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 2 * 60 * 60 * 1000,
+  },
+  {
+    _id: '4',
+    title: 'Uniswap v4 Hooks 解説',
+    type: 'blog',
+    stage: 'ideas',
+    description: 'v4のフック機能を技術的に解説するブログ記事',
+    tags: ['Uniswap', 'DeFi', 'technical'],
+    order: 1,
+    createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
+  },
+  {
+    _id: '5',
+    title: 'Web3開発者の1日 vlog',
+    type: 'video',
+    stage: 'filming',
+    description: 'リアルな開発風景を撮影するvlog企画',
+    script: '# Web3 Dev Day Vlog\n\n朝のルーティン → コーディング → ミーティング → 夜のまとめ',
+    thumbnailUrl: 'https://placehold.co/640x360/1a2e1a/e0e0e0?text=Dev+Vlog',
+    assigneeId: '1',
+    tags: ['vlog', 'web3', 'lifestyle'],
+    order: 0,
+    createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+  },
+  {
+    _id: '6',
+    title: 'OpenClawセットアップガイド',
+    type: 'blog',
+    stage: 'published',
+    description: 'OpenClawの初期セットアップ手順を詳しく解説',
+    script: '完成済み',
+    assigneeId: '2',
+    tags: ['OpenClaw', 'guide'],
+    order: 0,
+    createdAt: Date.now() - 10 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
   },
 ];
 
@@ -318,6 +365,7 @@ interface MockDataContextType {
   deleteNote: (id: string) => void;
   updateContent: (id: string, updates: Partial<ContentItem>) => void;
   createContent: (content: Omit<ContentItem, '_id' | 'createdAt' | 'updatedAt'>) => void;
+  deleteContent: (id: string) => void;
   updateAgentPosition: (id: string, updates: Partial<AgentPosition>) => void;
 }
 
@@ -439,6 +487,10 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     setContent(prev => [...prev, newContent]);
   };
 
+  const deleteContent = (id: string) => {
+    setContent(prev => prev.filter(item => item._id !== id));
+  };
+
   const updateAgentPosition = (id: string, updates: Partial<AgentPosition>) => {
     setAgentPositions(prev => prev.map(pos => 
       pos._id === id ? { ...pos, ...updates, lastActivityUpdate: Date.now() } : pos
@@ -462,6 +514,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       deleteNote,
       updateContent,
       createContent,
+      deleteContent,
       updateAgentPosition,
     }}>
       {children}
