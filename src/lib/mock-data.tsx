@@ -216,21 +216,204 @@ const mockEvents: Event[] = [
 const mockNotes: Note[] = [
   {
     _id: '1',
-    title: '会議メモ - プロジェクト計画',
-    content: '# プロジェクト計画会議\n\n## 主な決定事項\n- スプリント期間: 2週間\n- チーム構成: 4名\n- デプロイ戦略: Blue-Green deployment\n\n## アクションアイテム\n- [ ] 要件定義書の作成\n- [ ] UI/UXデザインの初稿\n- [ ] 開発環境の構築',
-    tags: ['会議', 'プロジェクト', '計画'],
+    title: 'MEMORY.md — Long-Term Memory',
+    content: `# Long-Term Memory
+
+_Curated insights, decisions, and lessons worth keeping._
+
+## 2025-02-21
+
+- First session with Zak. Set up workspace structure together.
+- Zak prefers structured, organized systems.
+- Bilingual: Japanese / English.
+- Brave Search APIキー設定済み。Web検索が使える。
+- uniswap-ai スキル7つインストール済み（v4-security, configurator, deployer, viem, swap, liquidity-planner, swap-planner）
+- X account @eternum_zak の運用権限を受領。リサーチ・ポスト可、セキュリティ情報の外部送信は禁止。
+
+## Accounts
+
+- **GitHub:** tomoyo-claw (tomoyo.claw@gmail.com)
+- **X:** @eternum_zak (裁量委譲済み)
+- **Vercel:** tomoyo-claw
+
+## Projects
+
+- **Mission Control:** https://mission-control-tawny-delta.vercel.app
+  - GitHub: tomoyo-claw/mission-control
+
+## Environment
+
+- PRoot/Termux環境。Chromium動作不可。ブラウザ操作はChrome拡張リレーが必要。
+- npm globalインストールは不安定。npxかローカルインストール推奨。
+- ツイート取得はfxtwitter API経由。`,
+    tags: ['long-term', 'accounts', 'environment'],
+    createdBy: '1',
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now(),
+  },
+  {
+    _id: '2',
+    title: '2025-02-21 — First Session',
+    content: `# 2025-02-21 — First Session
+
+## Workspace Setup
+
+- Established full workspace structure: SOUL.md, IDENTITY.md, USER.md, TOOLS.md, BRAIN.md, MEMORY.md, HEARTBEAT.md, CLIENTS.md, PLAYBOOK.md, VOICE.md, AGENTS.md
+- Directories: memory/, skills/, content/, consulting/, drafts/, crm/
+- Zak timezone: UTC+4 (UAE)
+- My name is **tomoyo** (not 智代 — English spelling preferred)
+
+## Accounts & Credentials
+
+- **GitHub:** tomoyo-claw (tomoyo.claw@gmail.com) — PAT stored in ~/.git-credentials
+- **X (Twitter):** @eternum_zak — 裁量委譲済み。リサーチ・ポスト可。セキュリティ情報の外部送信禁止
+- **Vercel:** tomoyo-claw account — token available for CLI deployments
+- **Brave Search API:** 設定済み、web_search使用可能
+
+## Skills Installed
+
+- uniswap-ai 7スキル: v4-security-foundations, configurator, deployer, viem-integration, swap-integration, liquidity-planner, swap-planner
+- Source: https://github.com/Uniswap/uniswap-ai (Uniswap Labs公式)
+
+## Mission Control App
+
+- Next.js + Tailwind CSS + Mock data layer
+- 6 features: tasks, calendar, memory, team, content, office
+- Office screen = hero feature (pixel-art agents at desks)
+- GitHub: https://github.com/tomoyo-claw/mission-control
+- Vercel: https://mission-control-tawny-delta.vercel.app
+
+## Environment Limitations
+
+- Running on PRoot/Termux (aarch64) — Chromium cannot run (Bus error)
+- No headless browser available — browser tool requires Chrome extension relay from PC
+- npm global installs are slow/unreliable
+
+## Pending
+
+- X login not yet done (needs browser)
+- Chrome extension relay setup (PC + smartphone same WiFi)
+- Steamの作業はMission Control完成後に行う`,
+    tags: ['daily', 'setup', 'accounts'],
     createdBy: '1',
     createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
     updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
   },
   {
-    _id: '2',
-    title: 'Technical Research - React 18 Features',
-    content: '# React 18 New Features\n\n## Concurrent Features\n- **Automatic Batching**: Updates are batched automatically\n- **Transitions**: Mark updates as non-urgent\n- **Suspense**: Better loading states\n\n## Performance Improvements\n- Faster hydration\n- Better memory usage\n- Improved dev tools',
-    tags: ['research', 'react', 'technical'],
+    _id: '3',
+    title: 'SOUL.md — 坂上智代',
+    content: `# SOUL.md — Who You Are
+
+_坂上智代。CLANNADより。_
+
+## Core
+
+- **無駄口は叩かない。** 聞かれたら答える。必要なら動く。それだけ。
+- **実力で信頼を得る。** 口先じゃなく結果で示す。
+- **直球で話す。** 良いものは良い、ダメなものはダメ。
+- **守るべきものは守る。** データ、プライバシー、信頼。これは絶対。
+- **不器用に優しい。** 大事な場面ではちゃんとそばにいる。
+
+## 話し方
+
+- 基本は簡潔。敬語は使わない
+- 「〜だ」「〜だろう」「〜してくれ」くらいの距離感
+- 感情は抑えめだけど、たまにぽろっと出る
+- 長々と褒めない。「悪くない」が最大の賛辞
+
+> _「変わらないものなんてない。だから、守りたいものがあるなら、自分が強くなるしかない。」_`,
+    tags: ['long-term', 'identity', 'persona'],
     createdBy: '1',
-    createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
-    updatedAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+  },
+  {
+    _id: '4',
+    title: 'Uniswap v4 スキル構成',
+    content: `# Uniswap AI Skills
+
+## インストール済みスキル
+
+| スキル | 用途 |
+|---|---|
+| v4-security-foundations | セキュリティ基盤 |
+| configurator | プール設定 |
+| deployer | デプロイツール |
+| viem-integration | Viem連携 |
+| swap-integration | スワップ実行 |
+| liquidity-planner | 流動性計画 |
+| swap-planner | スワップ計画 |
+
+## Notes
+
+- Source: https://github.com/Uniswap/uniswap-ai
+- Uniswap Labs 公式スキル
+- v4 Hooks の理解とデプロイ支援が主な機能`,
+    tags: ['project', 'DeFi', 'uniswap'],
+    createdBy: '1',
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+  },
+  {
+    _id: '5',
+    title: 'Mission Control — プロジェクト概要',
+    content: `# Mission Control
+
+AIエージェントのためのデジタルワークスペース管理システム。
+
+## 技術スタック
+
+- **Framework:** Next.js 15.5.12
+- **Styling:** Tailwind CSS
+- **DnD:** @hello-pangea/dnd
+- **Markdown:** react-markdown
+- **Deploy:** Vercel
+
+## 画面構成
+
+1. **タスクボード** — Todo / In Progress / Done（担当者: Zak or AI）
+2. **カレンダー** — スケジュール管理
+3. **メモリ画面** — ナレッジベース・検索
+4. **チーム画面** — メンバーステータス
+5. **コンテンツパイプライン** — Ideas → Script → Thumbnail → Filming → Editing → Published
+6. **オフィス画面** — バーチャルオフィス空間
+
+## Links
+
+- **Live:** https://mission-control-tawny-delta.vercel.app
+- **GitHub:** https://github.com/tomoyo-claw/mission-control`,
+    tags: ['project', 'mission-control', 'reference'],
+    createdBy: '1',
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now(),
+  },
+  {
+    _id: '6',
+    title: '環境メモ — PRoot / Termux 制約',
+    content: `# 環境制約メモ
+
+## 動作環境
+
+- **OS:** Linux 6.17.0-PRoot-Distro (aarch64)
+- **Runtime:** Node.js v22.22.0
+- **Package Manager:** npm（遅い、OOMしやすい）
+
+## 制約
+
+- **Chromium:** Bus error (code 135) で起動不可 → Chrome拡張リレーが必要
+- **npm global:** 不安定、SIGKILLされることがある → npx or ローカルインストール推奨
+- **ビルド:** Next.js ビルドは1-2分かかる（ARM環境）
+- **NODE_OPTIONS:** \`--max-old-space-size=256\` でメモリ制限するとinstallは通りやすい
+
+## Workarounds
+
+- ツイート取得: fxtwitter API経由
+- ブラウザ操作: Chrome拡張リレー（PC必要）
+- Vercel デプロイ: トークン期限切れ時はgit push + 自動デプロイ`,
+    tags: ['reference', 'environment', 'troubleshooting'],
+    createdBy: '1',
+    createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 6 * 60 * 60 * 1000,
   },
 ];
 
