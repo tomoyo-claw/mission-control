@@ -1,131 +1,54 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { query, mutation } from "./_generated/server";
 
-// Query events within a date range
-export const getEvents = query({
-  args: {
-    startDate: v.optional(v.number()),
-    endDate: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    let eventsQuery = ctx.db.query("events");
-    
-    // If date range is provided, filter by it
-    if (args.startDate && args.endDate) {
-      eventsQuery = eventsQuery.withIndex("by_date_range", (q) =>
-        q.gte("startDate", args.startDate).lte("endDate", args.endDate)
-      );
-    }
-    
-    const events = await eventsQuery.order("asc").collect();
-    
-    // Get creator information for each event
-    const eventsWithCreators = await Promise.all(
-      events.map(async (event) => {
-        const creator = await ctx.db.get(event.createdBy);
-        return { ...event, creator };
-      })
-    );
-    
-    return eventsWithCreators;
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("events").collect();
   },
 });
 
-// Create a new event
-export const createEvent = mutation({
+export const create = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
     startDate: v.number(),
     endDate: v.number(),
-    category: v.string(),
+    category: v.union(v.literal("task"), v.literal("cron"), v.literal("meeting"), v.literal("reminder"), v.literal("milestone")),
     color: v.string(),
-    createdBy: v.id("users"),
+    assignee: v.optional(v.union(v.literal("zak"), v.literal("ai"))),
+    status: v.optional(v.union(v.literal("scheduled"), v.literal("running"), v.literal("completed"), v.literal("failed"))),
+    recurring: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const now = Date.now();
-    return await ctx.db.insert("events", {
-      ...args,
-      createdAt: now,
-      updatedAt: now,
-    });
+    return await ctx.db.insert("events", args);
   },
 });
 
-// Update an event
-export const updateEvent = mutation({
+export const update = mutation({
   args: {
     id: v.id("events"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     startDate: v.optional(v.number()),
     endDate: v.optional(v.number()),
-    category: v.optional(v.string()),
+    category: v.optional(v.union(v.literal("task"), v.literal("cron"), v.literal("meeting"), v.literal("reminder"), v.literal("milestone"))),
     color: v.optional(v.string()),
+    assignee: v.optional(v.union(v.literal("zak"), v.literal("ai"))),
+    status: v.optional(v.union(v.literal("scheduled"), v.literal("running"), v.literal("completed"), v.literal("failed"))),
+    recurring: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const { id, ...updates } = args;
-    return await ctx.db.patch(id, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
+  handler: async (ctx, { id, ...updates }) => {
+    const filtered = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+    await ctx.db.patch(id, filtered);
   },
 });
 
-// Delete an event
-export const deleteEvent = mutation({
+export const remove = mutation({
   args: { id: v.id("events") },
-  handler: async (ctx, args) => {
-    return await ctx.db.delete(args.id);
-  },
-});
-
-// Get events for today
-export const getTodaysEvents = query({
-  handler: async (ctx) => {
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
-    
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_date_range", (q) =>
-        q.gte("startDate", startOfDay).lte("startDate", endOfDay)
-      )
-      .collect();
-    
-    const eventsWithCreators = await Promise.all(
-      events.map(async (event) => {
-        const creator = await ctx.db.get(event.createdBy);
-        return { ...event, creator };
-      })
-    );
-    
-    return eventsWithCreators;
-  },
-});
-
-// Get upcoming events (next 7 days)
-export const getUpcomingEvents = query({
-  handler: async (ctx) => {
-    const now = Date.now();
-    const weekFromNow = now + (7 * 24 * 60 * 60 * 1000);
-    
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_date_range", (q) =>
-        q.gte("startDate", now).lte("startDate", weekFromNow)
-      )
-      .order("asc")
-      .collect();
-    
-    const eventsWithCreators = await Promise.all(
-      events.map(async (event) => {
-        const creator = await ctx.db.get(event.createdBy);
-        return { ...event, creator };
-      })
-    );
-    
-    return eventsWithCreators;
+  handler: async (ctx, { id }) => {
+    await ctx.db.delete(id);
   },
 });

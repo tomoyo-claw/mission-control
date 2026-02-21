@@ -1,289 +1,133 @@
 import { mutation } from "./_generated/server";
 
-export const seedData = mutation({
+export const seed = mutation({
+  args: {},
   handler: async (ctx) => {
-    // Check if data already exists
-    const existingUsers = await ctx.db.query("users").collect();
-    if (existingUsers.length > 0) {
-      return "Data already exists";
-    }
+    // Check if already seeded
+    const existing = await ctx.db.query("tasks").first();
+    if (existing) return "already seeded";
 
-    const now = Date.now();
-
-    // Create sample users
-    const user1 = await ctx.db.insert("users", {
-      name: "Alice Johnson",
-      email: "alice@missioncontrol.dev",
-      role: "Product Manager",
-      status: "online",
-      avatar: "🧑‍💼",
-      bio: "Leading product development and strategy",
-      lastActive: now,
-      joinedAt: now - (30 * 24 * 60 * 60 * 1000), // 30 days ago
-    });
-
-    const user2 = await ctx.db.insert("users", {
-      name: "Bob Smith",
-      email: "bob@missioncontrol.dev",
-      role: "Developer",
-      status: "busy",
-      avatar: "👨‍💻",
-      bio: "Full-stack developer specializing in React and Node.js",
-      lastActive: now,
-      joinedAt: now - (45 * 24 * 60 * 60 * 1000), // 45 days ago
-    });
-
-    const user3 = await ctx.db.insert("users", {
-      name: "Carol Davis",
-      email: "carol@missioncontrol.dev",
-      role: "Designer",
-      status: "away",
-      avatar: "🎨",
-      bio: "UI/UX designer passionate about creating beautiful experiences",
-      lastActive: now - (2 * 60 * 60 * 1000), // 2 hours ago
-      joinedAt: now - (60 * 24 * 60 * 60 * 1000), // 60 days ago
-    });
-
-    const user4 = await ctx.db.insert("users", {
-      name: "Dave Wilson",
-      email: "dave@missioncontrol.dev",
-      role: "Content Creator",
-      status: "online",
-      avatar: "📝",
-      bio: "Creating engaging content across multiple platforms",
-      lastActive: now,
-      joinedAt: now - (20 * 24 * 60 * 60 * 1000), // 20 days ago
-    });
-
-    // Create user metrics
-    await ctx.db.insert("userMetrics", {
-      userId: user1,
-      tasksCompleted: 15,
-      contentCreated: 8,
-      weeklyGoal: 10,
-      lastUpdated: now,
-    });
-
-    await ctx.db.insert("userMetrics", {
-      userId: user2,
-      tasksCompleted: 12,
-      contentCreated: 3,
-      weeklyGoal: 8,
-      lastUpdated: now,
-    });
-
-    await ctx.db.insert("userMetrics", {
-      userId: user3,
-      tasksCompleted: 18,
-      contentCreated: 12,
-      weeklyGoal: 12,
-      lastUpdated: now,
-    });
-
-    await ctx.db.insert("userMetrics", {
-      userId: user4,
-      tasksCompleted: 22,
-      contentCreated: 35,
-      weeklyGoal: 15,
-      lastUpdated: now,
-    });
-
-    // Create sample tasks
+    // Tasks
     await ctx.db.insert("tasks", {
-      title: "Design new user dashboard",
-      description: "Create wireframes and mockups for the new user dashboard",
-      status: "inprogress",
+      title: "Chrome拡張リレーのセットアップ",
+      description: "PCのChromeにOpenClaw Browser Relay拡張をインストール",
+      status: "todo",
       priority: "high",
-      assigneeId: user3,
-      order: 1,
-      createdAt: now - (3 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (1 * 24 * 60 * 60 * 1000),
+      assignee: "zak",
+      order: 0,
     });
-
     await ctx.db.insert("tasks", {
-      title: "Implement authentication system",
-      description: "Set up user authentication with JWT and refresh tokens",
-      status: "review",
-      priority: "high",
-      assigneeId: user2,
-      order: 1,
-      createdAt: now - (5 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (1 * 24 * 60 * 60 * 1000),
-    });
-
-    await ctx.db.insert("tasks", {
-      title: "Write API documentation",
-      description: "Document all REST API endpoints with examples",
-      status: "backlog",
-      priority: "medium",
-      assigneeId: user2,
-      order: 1,
-      createdAt: now - (2 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (2 * 24 * 60 * 60 * 1000),
-    });
-
-    await ctx.db.insert("tasks", {
-      title: "Plan Q2 product roadmap",
-      description: "Define priorities and timelines for Q2 deliverables",
+      title: "コンテンツパイプライン改善",
+      description: "6カラムKanbanボードの実装",
       status: "done",
       priority: "high",
-      assigneeId: user1,
+      assignee: "ai",
+      order: 0,
+    });
+    await ctx.db.insert("tasks", {
+      title: "X (@eternum_zak) ログイン",
+      description: "ブラウザリレー経由でXにログインしてリサーチ開始",
+      status: "todo",
+      priority: "medium",
+      assignee: "ai",
       order: 1,
-      createdAt: now - (7 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (1 * 24 * 60 * 60 * 1000),
     });
-
-    // Create sample events
-    await ctx.db.insert("events", {
-      title: "Team Standup",
-      description: "Daily team synchronization meeting",
-      startDate: now + (1 * 60 * 60 * 1000), // 1 hour from now
-      endDate: now + (1.5 * 60 * 60 * 1000), // 1.5 hours from now
-      category: "meeting",
-      color: "#3b82f6",
-      createdBy: user1,
-      createdAt: now,
-      updatedAt: now,
+    await ctx.db.insert("tasks", {
+      title: "Mission Control UIデザイン改善",
+      description: "レスポンシブ対応とアニメーション追加",
+      status: "todo",
+      priority: "low",
+      assignee: "ai",
+      order: 2,
     });
-
-    await ctx.db.insert("events", {
-      title: "Design Review",
-      description: "Review mockups for the new dashboard",
-      startDate: now + (3 * 60 * 60 * 1000), // 3 hours from now
-      endDate: now + (4 * 60 * 60 * 1000), // 4 hours from now
-      category: "review",
-      color: "#10b981",
-      createdBy: user3,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    // Create sample notes
-    await ctx.db.insert("notes", {
-      title: "Project Architecture Notes",
-      content: `# Project Architecture
-
-## Frontend
-- Next.js 14 with App Router
-- TypeScript for type safety
-- Tailwind CSS for styling
-
-## Backend
-- Convex for database and real-time updates
-- Serverless functions for API
-
-## Key Decisions
-- Using server components where possible
-- Implementing drag-and-drop with react-beautiful-dnd
-- Dark theme as default`,
-      tags: ["architecture", "frontend", "backend"],
-      createdBy: user2,
-      createdAt: now - (1 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (1 * 24 * 60 * 60 * 1000),
-    });
-
-    await ctx.db.insert("notes", {
-      title: "User Research Insights",
-      content: `# User Research Findings
-
-## Key Pain Points
-1. Current task management is fragmented
-2. Lack of visibility into team status
-3. Content pipeline is manual and error-prone
-
-## User Needs
-- Unified workspace view
-- Real-time collaboration
-- Visual progress tracking
-
-## Recommendations
-- Implement office screen for team awareness
-- Add drag-and-drop task management
-- Include activity animations for engagement`,
-      tags: ["research", "users", "insights"],
-      createdBy: user1,
-      createdAt: now - (2 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (2 * 24 * 60 * 60 * 1000),
-    });
-
-    // Create sample content
-    await ctx.db.insert("content", {
-      title: "Mission Control Product Launch Blog Post",
-      type: "blog",
-      stage: "draft",
-      description: "Announcing our new digital workspace platform",
-      assigneeId: user4,
-      dueDate: now + (7 * 24 * 60 * 60 * 1000), // 7 days from now
+    await ctx.db.insert("tasks", {
+      title: "ワークスペース初期設定",
+      description: "SOUL.md, IDENTITY.md, TOOLS.md等の整備",
+      status: "done",
+      priority: "high",
+      assignee: "ai",
       order: 1,
-      createdAt: now - (2 * 24 * 60 * 60 * 1000),
-      updatedAt: now,
     });
 
+    // Notes
+    await ctx.db.insert("notes", {
+      title: "MEMORY.md — Long-Term Memory",
+      content: "# Long-Term Memory\n\n## 2025-02-21\n\n- First session with Zak. Set up workspace structure together.\n- Zak prefers structured, organized systems.\n- Bilingual: Japanese / English.\n- Brave Search APIキー設定済み。\n- uniswap-ai 7スキルインストール済み\n- X account @eternum_zak の運用権限を受領。\n\n## Accounts\n- GitHub: tomoyo-claw\n- X: @eternum_zak\n- Vercel: tomoyo-claw\n\n## Projects\n- Mission Control: https://mission-control-tawny-delta.vercel.app",
+      tags: ["long-term", "accounts", "environment"],
+    });
+    await ctx.db.insert("notes", {
+      title: "2025-02-21 — First Session",
+      content: "# First Session\n\n## Workspace Setup\n- Full workspace structure established\n- Zak timezone: UTC+4 (UAE)\n\n## Mission Control\n- Next.js + Tailwind CSS\n- 7 screens implemented\n- Convex backend integrated",
+      tags: ["daily", "setup"],
+    });
+    await ctx.db.insert("notes", {
+      title: "Mission Control — プロジェクト概要",
+      content: "# Mission Control\n\nAIエージェントのためのデジタルワークスペース管理システム。\n\n## 技術スタック\n- Next.js 15\n- Tailwind CSS\n- Convex (Backend)\n- @hello-pangea/dnd\n\n## 画面構成\n1. ホームダッシュボード\n2. タスクボード\n3. カレンダー\n4. メモリ\n5. コンテンツパイプライン\n6. チーム\n7. オフィス",
+      tags: ["project", "mission-control", "reference"],
+    });
+
+    // Content
     await ctx.db.insert("content", {
-      title: "Feature Demo Video",
+      title: "AIエージェントの始め方ガイド",
       type: "video",
-      stage: "idea",
-      description: "Screen recording showcasing key features",
-      assigneeId: user4,
-      dueDate: now + (14 * 24 * 60 * 60 * 1000), // 14 days from now
-      order: 1,
-      createdAt: now,
-      updatedAt: now,
+      stage: "script",
+      description: "AIエージェントを使ったワークフロー自動化の入門動画",
+      script: "# AIエージェント入門\n\n## イントロ\nこんにちは、今日はAIエージェントの基本を解説します。",
+      tags: ["AI", "tutorial"],
+      assignee: "ai",
+      order: 0,
     });
-
     await ctx.db.insert("content", {
-      title: "Social Media Campaign",
-      type: "tweet",
-      stage: "review",
-      description: "Series of tweets for product launch",
-      assigneeId: user4,
-      dueDate: now + (3 * 24 * 60 * 60 * 1000), // 3 days from now
-      order: 1,
-      createdAt: now - (1 * 24 * 60 * 60 * 1000),
-      updatedAt: now - (4 * 60 * 60 * 1000),
+      title: "DeFi × AI の未来",
+      type: "article",
+      stage: "ideas",
+      description: "DeFiプロトコルにAIがどう組み込まれるかの考察",
+      tags: ["DeFi", "AI"],
+      order: 0,
+    });
+    await ctx.db.insert("content", {
+      title: "OpenClawセットアップガイド",
+      type: "blog",
+      stage: "published",
+      description: "OpenClawの初期セットアップ手順を詳しく解説",
+      tags: ["OpenClaw", "guide"],
+      assignee: "ai",
+      order: 0,
     });
 
-    // Create agent positions for office screen
-    await ctx.db.insert("agentPositions", {
-      userId: user1,
-      deskNumber: 1,
-      x: 150,
-      y: 200,
-      currentActivity: "typing",
-      currentTask: "Reviewing product roadmap",
-      lastActivityUpdate: now,
+    // Events
+    const now = Date.now();
+    await ctx.db.insert("events", {
+      title: "Mission Control UI改善",
+      description: "カレンダー・チーム・オフィス画面の改修",
+      startDate: now,
+      endDate: now + 4 * 3600000,
+      category: "task",
+      color: "#3B82F6",
+      assignee: "ai",
+      status: "completed",
+    });
+    await ctx.db.insert("events", {
+      title: "Heartbeat チェック",
+      description: "定期ハートビートポーリング",
+      startDate: now + 1800000,
+      endDate: now + 1860000,
+      category: "cron",
+      color: "#8B5CF6",
+      assignee: "ai",
+      status: "scheduled",
+      recurring: "毎30分",
+    });
+    await ctx.db.insert("events", {
+      title: "Chrome拡張リレー セットアップ",
+      startDate: now + 86400000,
+      endDate: now + 86400000 + 3600000,
+      category: "task",
+      color: "#06B6D4",
+      assignee: "zak",
+      status: "scheduled",
     });
 
-    await ctx.db.insert("agentPositions", {
-      userId: user2,
-      deskNumber: 2,
-      x: 350,
-      y: 200,
-      currentActivity: "coding",
-      currentTask: "Working on authentication",
-      lastActivityUpdate: now - (15 * 60 * 1000),
-    });
-
-    await ctx.db.insert("agentPositions", {
-      userId: user3,
-      deskNumber: 3,
-      x: 150,
-      y: 400,
-      currentActivity: "away",
-      currentTask: "Design meeting",
-      lastActivityUpdate: now - (2 * 60 * 60 * 1000),
-    });
-
-    await ctx.db.insert("agentPositions", {
-      userId: user4,
-      deskNumber: 4,
-      x: 350,
-      y: 400,
-      currentActivity: "writing",
-      currentTask: "Creating blog content",
-      lastActivityUpdate: now - (10 * 60 * 1000),
-    });
-
-    return "Seed data created successfully!";
+    return "seeded";
   },
 });

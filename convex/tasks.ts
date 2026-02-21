@@ -1,92 +1,48 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { query, mutation } from "./_generated/server";
 
-// Query all tasks
-export const getTasks = query({
+export const list = query({
+  args: {},
   handler: async (ctx) => {
-    const tasks = await ctx.db.query("tasks").order("asc").collect();
-    
-    // Get assignee information for each task
-    const tasksWithAssignees = await Promise.all(
-      tasks.map(async (task) => {
-        if (task.assigneeId) {
-          const assignee = await ctx.db.get(task.assigneeId);
-          return { ...task, assignee };
-        }
-        return { ...task, assignee: null };
-      })
-    );
-    
-    return tasksWithAssignees;
+    return await ctx.db.query("tasks").collect();
   },
 });
 
-// Create a new task
-export const createTask = mutation({
+export const create = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
-    status: v.union(v.literal("backlog"), v.literal("inprogress"), v.literal("review"), v.literal("done")),
+    status: v.union(v.literal("todo"), v.literal("inprogress"), v.literal("done")),
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
-    assigneeId: v.optional(v.id("users")),
-  },
-  handler: async (ctx, args) => {
-    // Get the current max order for the status column
-    const tasksInStatus = await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("status"), args.status))
-      .collect();
-    
-    const maxOrder = Math.max(...tasksInStatus.map(t => t.order), 0);
-    
-    const now = Date.now();
-    return await ctx.db.insert("tasks", {
-      ...args,
-      order: maxOrder + 1,
-      createdAt: now,
-      updatedAt: now,
-    });
-  },
-});
-
-// Update task status (for drag and drop)
-export const updateTaskStatus = mutation({
-  args: {
-    id: v.id("tasks"),
-    status: v.union(v.literal("backlog"), v.literal("inprogress"), v.literal("review"), v.literal("done")),
+    assignee: v.union(v.literal("zak"), v.literal("ai")),
     order: v.number(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.patch(args.id, {
-      status: args.status,
-      order: args.order,
-      updatedAt: Date.now(),
-    });
+    return await ctx.db.insert("tasks", args);
   },
 });
 
-// Update task
-export const updateTask = mutation({
+export const update = mutation({
   args: {
     id: v.id("tasks"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
+    status: v.optional(v.union(v.literal("todo"), v.literal("inprogress"), v.literal("done"))),
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
-    assigneeId: v.optional(v.id("users")),
+    assignee: v.optional(v.union(v.literal("zak"), v.literal("ai"))),
+    order: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
-    const { id, ...updates } = args;
-    return await ctx.db.patch(id, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
+  handler: async (ctx, { id, ...updates }) => {
+    const filtered = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+    await ctx.db.patch(id, filtered);
   },
 });
 
-// Delete task
-export const deleteTask = mutation({
+export const remove = mutation({
   args: { id: v.id("tasks") },
-  handler: async (ctx, args) => {
-    return await ctx.db.delete(args.id);
+  handler: async (ctx, { id }) => {
+    await ctx.db.delete(id);
   },
 });
