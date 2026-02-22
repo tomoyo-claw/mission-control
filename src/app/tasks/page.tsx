@@ -75,6 +75,9 @@ export default function TasksPage() {
   const [isClearingAll, setIsClearingAll] = useState(false);
   const [promptModal, setPromptModal] = useState<{ taskId: string; title: string } | null>(null);
   const [promptText, setPromptText] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterAssignee, setFilterAssignee] = useState("");
+  const [filterPriority, setFilterPriority] = useState("");
 
   const handleDragEnd = (result: DropResult) => {
     const { destination, draggableId } = result;
@@ -148,8 +151,17 @@ export default function TasksPage() {
     }
   };
 
+  const filteredTasks = tasks.filter((t) => {
+    if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterAssignee && t.assignee !== filterAssignee) return false;
+    if (filterPriority && t.priority !== filterPriority) return false;
+    return true;
+  });
+
+  const isFiltering = search || filterAssignee || filterPriority;
+
   const byStatus = (status: string) =>
-    tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
+    filteredTasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
 
   const zakTasks = tasks.filter((t) => t.assignee === "zak" && t.status !== "done").length;
   const aiTasks = tasks.filter((t) => t.assignee === "ai" && t.status !== "done").length;
@@ -203,6 +215,40 @@ export default function TasksPage() {
           color="text-green-400"
         />
       </div>
+
+      {/* Search & Filter */}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="タスクを検索..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-gray-500"
+        />
+        <select
+          value={filterAssignee}
+          onChange={(e) => setFilterAssignee(e.target.value)}
+          className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-gray-300 focus:outline-none"
+        >
+          <option value="">全員</option>
+          <option value="ai">AI</option>
+          <option value="zak">Zak</option>
+        </select>
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-gray-300 focus:outline-none"
+        >
+          <option value="">全優先度</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+
+      {isFiltering && (
+        <p className="text-xs text-gray-400 mb-3">{filteredTasks.length}件表示中</p>
+      )}
 
       {/* Board */}
       <DragDropContext onDragEnd={handleDragEnd}>
