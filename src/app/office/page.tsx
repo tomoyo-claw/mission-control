@@ -176,10 +176,10 @@ export default function OfficePage() {
       const subDefaults: Record<string, DeskAgent["status"]> = {
         dev: "idle",
         writer: "idle",
-        designer: "offline",
+        designer: "idle",
         researcher: "idle",
-        guardian: "offline",
-        analyst: "offline",
+        guardian: "idle",
+        analyst: "idle",
       };
       return { ...base, status: subDefaults[base.id] ?? "idle" } as DeskAgent;
     });
