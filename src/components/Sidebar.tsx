@@ -10,11 +10,13 @@ import {
   Users,
   Workflow,
   Building,
-  Zap
+  Zap,
+  GitBranch,
 } from "lucide-react";
 
 const navigation = [
   { name: "タスクボード", href: "/tasks", icon: CheckSquare, color: "text-blue-400" },
+  { name: "GitHub Issues", href: "/issues", icon: GitBranch, color: "text-emerald-400" },
   { name: "カレンダー", href: "/calendar", icon: Calendar, color: "text-green-400" },
   { name: "メモリ画面", href: "/memory", icon: FileText, color: "text-purple-400" },
   { name: "チーム画面", href: "/team", icon: Users, color: "text-yellow-400" },
