@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Crown,
   Code,
@@ -17,6 +17,7 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
+import { useMockData } from "@/lib/mock-data";
 
 /* ── Agent desks ──────────────────────────────────── */
 interface DeskAgent {
@@ -33,7 +34,7 @@ interface DeskAgent {
   type: "human" | "main" | "sub";
 }
 
-const deskAgents: DeskAgent[] = [
+const baseAgents: Omit<DeskAgent, "status" | "currentTask">[] = [
   {
     id: "zak",
     name: "Zak",
@@ -43,8 +44,6 @@ const deskAgents: DeskAgent[] = [
     icon: User,
     color: "#06B6D4",
     screenColor: "#0891B2",
-    status: "working",
-    currentTask: "Mission Controlの構築を監督",
     type: "human",
   },
   {
@@ -56,8 +55,6 @@ const deskAgents: DeskAgent[] = [
     icon: Crown,
     color: "#8B5CF6",
     screenColor: "#7C3AED",
-    status: "working",
-    currentTask: "オフィス画面の実装",
     type: "main",
   },
   {
@@ -69,7 +66,6 @@ const deskAgents: DeskAgent[] = [
     icon: Code,
     color: "#3B82F6",
     screenColor: "#2563EB",
-    status: "idle",
     type: "sub",
   },
   {
@@ -81,7 +77,6 @@ const deskAgents: DeskAgent[] = [
     icon: Pen,
     color: "#10B981",
     screenColor: "#059669",
-    status: "idle",
     type: "sub",
   },
   {
@@ -93,7 +88,6 @@ const deskAgents: DeskAgent[] = [
     icon: Palette,
     color: "#EC4899",
     screenColor: "#DB2777",
-    status: "offline",
     type: "sub",
   },
   {
@@ -105,7 +99,6 @@ const deskAgents: DeskAgent[] = [
     icon: Search,
     color: "#F59E0B",
     screenColor: "#D97706",
-    status: "idle",
     type: "sub",
   },
   {
@@ -117,7 +110,6 @@ const deskAgents: DeskAgent[] = [
     icon: Shield,
     color: "#EF4444",
     screenColor: "#DC2626",
-    status: "offline",
     type: "sub",
   },
   {
@@ -129,7 +121,6 @@ const deskAgents: DeskAgent[] = [
     icon: BarChart3,
     color: "#06B6D4",
     screenColor: "#0891B2",
-    status: "offline",
     type: "sub",
   },
 ];
@@ -147,6 +138,52 @@ export default function OfficePage() {
   const [selected, setSelected] = useState<DeskAgent | null>(null);
   const [time, setTime] = useState(new Date());
   const [activities, setActivities] = useState<Record<string, string>>({});
+
+  // Live task data from Convex
+  const { tasks } = useMockData();
+
+  // Derive agent statuses from real task data
+  const deskAgents = useMemo((): DeskAgent[] => {
+    const zakInProgress = tasks.filter(
+      (t) => t.assignee === "zak" && t.status === "inprogress"
+    );
+    const zakTodo = tasks.filter(
+      (t) => t.assignee === "zak" && t.status === "todo"
+    );
+    const aiInProgress = tasks.filter(
+      (t) => t.assignee === "ai" && t.status === "inprogress"
+    );
+    const aiTodo = tasks.filter(
+      (t) => t.assignee === "ai" && t.status === "todo"
+    );
+
+    return baseAgents.map((base) => {
+      if (base.id === "zak") {
+        return {
+          ...base,
+          status: zakInProgress.length > 0 ? "working" : zakTodo.length > 0 ? "idle" : "away",
+          currentTask: zakInProgress[0]?.title ?? (zakTodo.length > 0 ? `次: ${zakTodo[0].title}` : undefined),
+        } as DeskAgent;
+      }
+      if (base.id === "tomoyo") {
+        return {
+          ...base,
+          status: aiInProgress.length > 0 ? "working" : aiTodo.length > 0 ? "idle" : "away",
+          currentTask: aiInProgress[0]?.title ?? (aiTodo.length > 0 ? `次: ${aiTodo[0].title}` : undefined),
+        } as DeskAgent;
+      }
+      // Sub-agents: fixed statuses
+      const subDefaults: Record<string, DeskAgent["status"]> = {
+        dev: "idle",
+        writer: "idle",
+        designer: "offline",
+        researcher: "idle",
+        guardian: "offline",
+        analyst: "offline",
+      };
+      return { ...base, status: subDefaults[base.id] ?? "idle" } as DeskAgent;
+    });
+  }, [tasks]);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -166,7 +203,7 @@ export default function OfficePage() {
       setActivities(newActs);
     }, 2500);
     return () => clearInterval(interval);
-  }, []);
+  }, [deskAgents]);
 
   const workingCount = deskAgents.filter((a) => a.status === "working").length;
   const idleCount = deskAgents.filter((a) => a.status === "idle").length;
