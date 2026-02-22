@@ -138,7 +138,7 @@ export default function TasksPage() {
 
   const handleClearAll = async () => {
     if (!tasks.length || isClearingAll) return;
-    const confirmed = window.confirm("Delete all tasks?");
+    const confirmed = window.confirm('全タスクを削除しますか？この操作は取り消せません。');
     if (!confirmed) return;
     setIsClearingAll(true);
     try {
@@ -168,9 +168,9 @@ export default function TasksPage() {
           <button
             onClick={() => void handleClearAll()}
             disabled={isClearingAll}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+            className="text-red-400 hover:text-red-300 border border-red-800 hover:border-red-600 px-3 py-1.5 rounded text-sm flex items-center gap-1.5"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 size={14} />
             {isClearingAll ? "Clearing..." : "Clear All"}
           </button>
         )}

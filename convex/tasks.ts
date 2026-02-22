@@ -78,8 +78,7 @@ export const clearAll = mutation({
   args: {},
   handler: async (ctx) => {
     const tasks = await ctx.db.query("tasks").collect();
-    for (const task of tasks) {
-      await ctx.db.delete(task._id);
-    }
+    await Promise.all(tasks.map(task => ctx.db.delete(task._id)));
+    return tasks.length;
   },
 });
