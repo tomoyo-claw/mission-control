@@ -26,6 +26,7 @@ export const create = mutation({
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     assignee: v.union(v.literal("zak"), v.literal("ai")),
     order: v.number(),
+    dueDate: v.optional(v.number()),
     prompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -45,6 +46,7 @@ export const update = mutation({
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
     assignee: v.optional(v.union(v.literal("zak"), v.literal("ai"))),
     order: v.optional(v.number()),
+    dueDate: v.optional(v.number()),
     prompt: v.optional(v.string()),
     aiStatus: v.optional(
       v.union(
@@ -69,5 +71,15 @@ export const remove = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, { id }) => {
     await ctx.db.delete(id);
+  },
+});
+
+export const clearAll = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const tasks = await ctx.db.query("tasks").collect();
+    for (const task of tasks) {
+      await ctx.db.delete(task._id);
+    }
   },
 });

@@ -9,6 +9,7 @@ export default defineSchema({
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     assignee: v.union(v.literal("zak"), v.literal("ai")),
     order: v.number(),
+    dueDate: v.optional(v.number()),
     prompt: v.optional(v.string()),
     aiStatus: v.optional(
       v.union(

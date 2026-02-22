@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
 import {
   DragDropContext,
   Droppable,
@@ -22,6 +23,7 @@ import {
   Zap,
   AlertCircle,
 } from "lucide-react";
+import { api } from "../../../convex/_generated/api";
 import { useMockData, Task } from "@/lib/mock-data";
 
 /* ── Columns ──────────────────────────────────────── */
@@ -64,10 +66,13 @@ const priorityConfig = {
 /* ── Main Page ────────────────────────────────────── */
 export default function TasksPage() {
   const { tasks, updateTask, createTask, deleteTask } = useMockData();
+  const clearAllTasks = useMutation(api.tasks.clearAll);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [quickAdd, setQuickAdd] = useState<string | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const [quickAssignee, setQuickAssignee] = useState<"zak" | "ai">("ai");
+  const [quickDueDate, setQuickDueDate] = useState("");
+  const [isClearingAll, setIsClearingAll] = useState(false);
   const [promptModal, setPromptModal] = useState<{ taskId: string; title: string } | null>(null);
   const [promptText, setPromptText] = useState("");
 
@@ -113,16 +118,34 @@ export default function TasksPage() {
 
   const handleQuickAdd = (status: Task["status"]) => {
     if (!quickTitle.trim()) return;
+    const dueDate = quickDueDate
+      ? new Date(`${quickDueDate}T23:59:59`).getTime()
+      : undefined;
+
     createTask({
       title: quickTitle,
       status,
       priority: "medium",
       assignee: quickAssignee,
       order: tasks.filter((t) => t.status === status).length,
+      dueDate,
     });
     setQuickTitle("");
     setQuickAssignee("ai");
+    setQuickDueDate("");
     setQuickAdd(null);
+  };
+
+  const handleClearAll = async () => {
+    if (!tasks.length || isClearingAll) return;
+    const confirmed = window.confirm("Delete all tasks?");
+    if (!confirmed) return;
+    setIsClearingAll(true);
+    try {
+      await clearAllTasks({});
+    } finally {
+      setIsClearingAll(false);
+    }
   };
 
   const byStatus = (status: string) =>
@@ -134,11 +157,23 @@ export default function TasksPage() {
   return (
     <div className="p-4 md:p-6 min-h-screen">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1">タスクボード</h1>
         <p className="text-gray-400 text-sm">
           すべてのタスクと担当者を管理
         </p>
+        </div>
+        {tasks.length > 0 && (
+          <button
+            onClick={() => void handleClearAll()}
+            disabled={isClearingAll}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isClearingAll ? "Clearing..." : "Clear All"}
+          </button>
+        )}
       </div>
 
       {/* Stats */}
@@ -220,10 +255,19 @@ export default function TasksPage() {
                             onChange={(e) => setQuickTitle(e.target.value)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") handleQuickAdd(col.id);
-                              if (e.key === "Escape") setQuickAdd(null);
+                              if (e.key === "Escape") {
+                                setQuickDueDate("");
+                                setQuickAdd(null);
+                              }
                             }}
                             placeholder="タスク名..."
                             className="w-full bg-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                          <input
+                            type="date"
+                            value={quickDueDate}
+                            onChange={(e) => setQuickDueDate(e.target.value)}
+                            className="w-full bg-gray-700 rounded px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
                           />
                           <div className="flex items-center gap-2">
                             {/* Assignee toggle */}
@@ -256,7 +300,10 @@ export default function TasksPage() {
                               追加
                             </button>
                             <button
-                              onClick={() => setQuickAdd(null)}
+                              onClick={() => {
+                                setQuickDueDate("");
+                                setQuickAdd(null);
+                              }}
                               className="px-2 py-1.5 text-gray-400 hover:text-white text-xs"
                             >
                               ✕
@@ -388,6 +435,18 @@ function StatCard({
 /* ── Task Card ────────────────────────────────────── */
 function TaskCard({ task }: { task: Task }) {
   const prio = priorityConfig[task.priority];
+  const dueDateLabel =
+    task.dueDate !== undefined
+      ? new Date(task.dueDate).toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : null;
+  const isOverdue =
+    task.dueDate !== undefined &&
+    task.status !== "done" &&
+    task.dueDate < Date.now();
 
   return (
     <div className="space-y-2">
@@ -403,6 +462,11 @@ function TaskCard({ task }: { task: Task }) {
       {task.description && (
         <p className="text-xs text-gray-400 line-clamp-2 pl-3.5">
           {task.description}
+        </p>
+      )}
+      {dueDateLabel && (
+        <p className={`text-xs pl-3.5 ${isOverdue ? "text-red-400" : "text-gray-400"}`}>
+          Due {dueDateLabel}
         </p>
       )}
 

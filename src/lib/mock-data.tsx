@@ -16,6 +16,7 @@ export interface Task {
   priority: "high" | "medium" | "low";
   assignee: "zak" | "ai";
   order: number;
+  dueDate?: number;
   prompt?: string;
   aiStatus?: "idle" | "pending" | "running" | "completed" | "failed";
   aiResult?: string;
@@ -143,7 +144,7 @@ interface MockDataContextType {
   content: ContentItem[];
   agentPositions: AgentPosition[];
   updateTask: (id: string, updates: Partial<Task>) => void;
-  createTask: (task: { title: string; description?: string; status: Task["status"]; priority?: Task["priority"]; assignee?: Task["assignee"]; order?: number }) => void;
+  createTask: (task: { title: string; description?: string; status: Task["status"]; priority?: Task["priority"]; assignee?: Task["assignee"]; order?: number; dueDate?: number }) => void;
   deleteTask: (id: string) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
   createNote: (note: { title: string; content: string; tags: string[]; createdBy?: string }) => void;
@@ -198,6 +199,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
       priority: data.priority || "medium",
       assignee: data.assignee || "ai",
       order: data.order || 0,
+      dueDate: data.dueDate,
     });
   };
 
@@ -209,6 +211,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     if (updates.priority !== undefined) args.priority = updates.priority;
     if (updates.assignee !== undefined) args.assignee = updates.assignee;
     if (updates.order !== undefined) args.order = updates.order;
+    if (updates.dueDate !== undefined) args.dueDate = updates.dueDate;
     if (updates.prompt !== undefined) args.prompt = updates.prompt;
     if (updates.aiStatus !== undefined) args.aiStatus = updates.aiStatus;
     if (updates.aiResult !== undefined) args.aiResult = updates.aiResult;
