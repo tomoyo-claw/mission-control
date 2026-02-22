@@ -12,10 +12,12 @@ import {
   Building,
   Zap,
   GitBranch,
+  BarChart3,
 } from "lucide-react";
 
 const navigation = [
   { name: "タスクボード", href: "/tasks", icon: CheckSquare, color: "text-blue-400" },
+  { name: "タスク統計", href: "/stats", icon: BarChart3, color: "text-blue-300" },
   { name: "GitHub Issues", href: "/issues", icon: GitBranch, color: "text-emerald-400" },
   { name: "カレンダー", href: "/calendar", icon: Calendar, color: "text-green-400" },
   { name: "メモリ画面", href: "/memory", icon: FileText, color: "text-purple-400" },
